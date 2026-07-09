@@ -152,7 +152,8 @@ Autenticação via NextAuth.js (Credentials + Google OAuth). Senhas com bcrypt. 
 ## 2026-07-09
 
 - Código subido para o repositório GitHub: https://github.com/cleciodivi/propoai.git
-- Próximo passo: criar banco PostgreSQL no Neon e fazer deploy na Vercel.
+- Banco PostgreSQL criado no Neon e migration inicial aplicada com sucesso.
+- Próximo passo: fazer deploy na Vercel.
 
 ---
 
