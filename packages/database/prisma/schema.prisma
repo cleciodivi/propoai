@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  password      String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  accounts  Account[]
+  sessions  Session[]
+  customers Customer[]
+  proposals Proposal[]
+
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  name      String
+  email     String
+  phone     String?
+  company   String?
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  proposals Proposal[]
+
+  @@map("customers")
+}
+
+enum ProposalStatus {
+  DRAFT
+  SENT
+  VIEWED
+  APPROVED
+  REJECTED
+  PAID
+  EXPIRED
+
+  @@map("proposal_status")
+}
+
+model Proposal {
+  id               String         @id @default(cuid())
+  userId           String         @map("user_id")
+  customerId       String         @map("customer_id")
+  title            String
+  description      String?
+  value            Decimal?       @db.Decimal(10, 2)
+  status           ProposalStatus @default(DRAFT)
+  slug             String         @unique
+  requiresContract Boolean        @default(false) @map("requires_contract")
+  expiresAt        DateTime?      @map("expires_at")
+  approvedAt       DateTime?      @map("approved_at")
+  paidAt           DateTime?      @map("paid_at")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customer Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  sections Section[]
+
+  @@map("proposals")
+}
+
+model Section {
+  id            String  @id @default(cuid())
+  proposalId    String  @map("proposal_id")
+  title         String
+  content       String
+  order         Int     @default(0)
+  isAiGenerated Boolean @default(false) @map("is_ai_generated")
+
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@map("sections")
+}
