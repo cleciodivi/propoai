@@ -149,6 +149,11 @@ Autenticação via NextAuth.js (Credentials + Google OAuth). Senhas com bcrypt. 
   - `packages/database/package.json` ajustado para gerar Prisma Client antes do build.
   - Criado `turbo.json` para orquestrar builds no monorepo.
 
+## 2026-07-09
+
+- Código subido para o repositório GitHub: https://github.com/cleciodivi/propoai.git
+- Próximo passo: criar banco PostgreSQL no Neon e fazer deploy na Vercel.
+
 ---
 
 # Instruções do Usuário
