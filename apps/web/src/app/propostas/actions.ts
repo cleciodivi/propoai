@@ -316,7 +316,7 @@ Responda APENAS com um JSON válido no seguinte formato, sem explicações adici
 
 A proposta deve ter entre 4 e 6 seções, incluindo: introdução, escopo do serviço, investimento, prazos e próximos passos.
 
-Na última seção (Próximos Passos), finalize com uma despedida seguida da assinatura: <p><strong>Equipe ${userName}</strong></p>.`
+Na última seção (Próximos Passos), finalize apenas com a despedida (ex: "Vamos juntos,"). NÃO inclua a assinatura "Equipe ${userName}" nem a frase do contrato no conteúdo da seção, pois serão adicionadas automaticamente.`
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -357,14 +357,28 @@ Na última seção (Próximos Passos), finalize com uma despedida seguida da ass
       status: "DRAFT",
       requiresContract: input.requiresContract ?? false,
       sections: {
-        create: parsed.sections.map((section, index) => ({
-          title: section.title,
-          content: input.requiresContract && index === parsed.sections.length - 1
-            ? `${section.content}<p><strong>ASSIM QUE A PROPOSTA FOR APROVADA DAREMOS INÍCIO AO CONTRATO.</strong></p><p><strong>Equipe ${userName}</strong></p>`
-            : section.content,
-          order: index,
-          isAiGenerated: true,
-        })),
+        create: parsed.sections.map((section, index) => {
+          const isLast = index === parsed.sections.length - 1;
+          let content = section.content;
+
+          if (isLast) {
+            // Remove assinatura duplicada que a IA possa ter gerado
+            content = content.replace(/<p>\s*<strong>Equipe [^<]+<\/strong>\s*<\/p>\s*$/i, "").trim();
+
+            if (input.requiresContract) {
+              content += `<p><strong>ASSIM QUE A PROPOSTA FOR APROVADA DAREMOS INÍCIO AO CONTRATO.</strong></p>`;
+            }
+
+            content += `<p><strong>Equipe ${userName}</strong></p>`;
+          }
+
+          return {
+            title: section.title,
+            content,
+            order: index,
+            isAiGenerated: true,
+          };
+        }),
       },
     },
     include: { sections: true },
