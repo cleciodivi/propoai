@@ -42,10 +42,10 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
+      <main className="container mx-auto px-4 py-8 overflow-x-hidden">
+        <div className="grid gap-6 lg:grid-cols-3 min-w-0">
+          <div className="lg:col-span-2 space-y-6 min-w-0">
+            <Card className="overflow-hidden">
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div className="min-w-0">
@@ -61,7 +61,7 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
               </CardHeader>
               <CardContent className="space-y-6">
                 {proposal.description && (
-                  <p className="text-muted-foreground">{proposal.description}</p>
+                  <p className="text-muted-foreground break-words">{proposal.description}</p>
                 )}
 
                 {proposal.sections.length === 0 ? (
@@ -69,10 +69,10 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
                 ) : (
                   <div className="space-y-6">
                     {proposal.sections.map((section) => (
-                      <div key={section.id}>
-                        <h3 className="text-lg font-semibold mb-2">{section.title}</h3>
+                      <div key={section.id} className="min-w-0">
+                        <h3 className="text-lg font-semibold mb-2 break-words">{section.title}</h3>
                         <div
-                          className="prose prose-sm max-w-none text-muted-foreground"
+                          className="prose prose-sm max-w-none text-muted-foreground break-words overflow-x-auto"
                           dangerouslySetInnerHTML={{ __html: section.content }}
                         />
                       </div>
