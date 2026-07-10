@@ -1,7 +1,7 @@
 [build]
   base = "apps/web"
   publish = ".next"
-  command = "pnpm --filter @propoai/database build && pnpm build"
+  command = "pnpm install && pnpm --filter @propoai/database build && pnpm build"
 
 [build.environment]
   NODE_VERSION = "22"
@@ -14,9 +14,3 @@
   from = "/_next/*"
   to = "/_next/:splat"
   status = 200
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = false
