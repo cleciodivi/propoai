@@ -1,8 +1,10 @@
 # Agent Memory
 
-Base de conhecimento persistente do projeto PropoAI.
+Base de conhecimento persistente do projeto PropoAI e repositório de aprendizados para projetos futuros.
 
-Sempre que descobrir algo novo sobre o projeto ou receber uma decisão importante do usuário, registre neste arquivo.
+Sempre que descobrir algo novo sobre o projeto, receber uma decisão importante do usuário ou identificar um padrão reutilizável, registre neste arquivo sem perguntar.
+
+O usuário espera que o agente seja proativo: aprenda com cada projeto, guarde decisões, erros, soluções e preferências, e aplique esse conhecimento em trabalhos futuros.
 
 ---
 
@@ -95,6 +97,32 @@ Autenticação via NextAuth.js (Credentials + Google OAuth). Senhas com bcrypt. 
 
 ---
 
+# Aprendizados Transversais (reutilizáveis em outros projetos)
+
+## 2026-07-10
+
+- **Deploy de monorepo Next.js + Prisma no Netlify:**
+  - Usar `pnpm --filter <pacote> run <script>` em vez de `pnpm --filter <pacote> <script>` quando o nome do script conflita com comandos internos do pnpm (ex: `deploy`).
+  - Incluir `prisma migrate deploy` no build do Netlify para criar/atualizar tabelas automaticamente no PostgreSQL (Neon).
+  - Configurar `included_files` no `netlify.toml` para o Prisma Client e schema serem empacotados nas Netlify Functions.
+  - Nunca commitar arquivos `.env` com valores reais; o scanner de segredos do Netlify quebra o build se encontrar valores de variáveis secretas no repositório.
+
+- **Auth.js v5 (NextAuth) no deploy:**
+  - As variáveis de ambiente corretas são `AUTH_SECRET`, `AUTH_URL`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` — não mais `NEXTAUTH_*`.
+  - Adicionar `trustHost: true` na configuração do NextAuth evita erros de host não confiável em deploys.
+  - Sempre tratar erros nas Server Actions de login/registro e exibir mensagens na UI; falhas silenciosas confundem o usuário.
+
+- **Responsividade mobile com Tailwind:**
+  - Adicionar `min-width: 0` globalmente evita que flex/grid items estourem a tela.
+  - `break-words` e `overflow-wrap: break-word` em textos evitam que títulos longos e conteúdo HTML quebrem o layout.
+  - Headers fixos devem usar `min-h` + padding vertical em vez de `h-16` rígido quando há risco de conteúdo empilhar em mobile.
+
+- **Produto / UX:**
+  - Assinatura de proposta deve usar o nome do usuário logado, não a marca do produto, para dar personalidade e credibilidade.
+  - Evitar duplicação de conteúdo gerado por IA adicionando manualmente no pós-processamento; instruir a IA a não incluir a assinatura/contrato no conteúdo da seção.
+
+---
+
 # Ajustes e Melhorias
 
 ## 2026-07-09
@@ -149,11 +177,20 @@ Autenticação via NextAuth.js (Credentials + Google OAuth). Senhas com bcrypt. 
   - `packages/database/package.json` ajustado para gerar Prisma Client antes do build.
   - Criado `turbo.json` para orquestrar builds no monorepo.
 
+## 2026-07-10
+
+- Deploy realizado com sucesso no Netlify (em vez da Vercel inicialmente planejada).
+- URL de produção: https://thunderous-fenglisu-338ba4.netlify.app
+- Banco PostgreSQL hospedado no Neon.
+- Autenticação (registro/login com e-mail/senha) funcionando em produção.
+- Responsividade mobile ajustada no dashboard e na página de visualização da proposta.
+- Assinatura da proposta personalizada com o nome do usuário logado.
+
 ## 2026-07-09
 
 - Código subido para o repositório GitHub: https://github.com/cleciodivi/propoai.git
 - Banco PostgreSQL criado no Neon e migration inicial aplicada com sucesso.
-- Próximo passo: fazer deploy na Vercel.
+- Próximo passo original: fazer deploy na Vercel. (Concluído no Netlify em 2026-07-10.)
 
 ---
 
