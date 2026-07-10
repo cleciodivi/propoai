@@ -1,7 +1,6 @@
 [build]
-  base = "apps/web"
-  publish = ".next"
-  command = "pnpm install && pnpm --filter @propoai/database build && pnpm build"
+  publish = "apps/web/.next"
+  command = "pnpm install && pnpm --filter @propoai/database build && pnpm --filter @propoai/web build"
 
 [build.environment]
   NODE_VERSION = "22"
@@ -9,6 +8,9 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+[functions]
+  included_files = ["packages/database/prisma/schema.prisma", "packages/database/dist/**"]
 
 [[redirects]]
   from = "/_next/*"
