@@ -1,9 +1,33 @@
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label } from "@propoai/ui";
 import { signIn } from "@/auth";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Sparkles, ArrowLeft } from "lucide-react";
+import { AuthError } from "next-auth";
 
-export default function LoginPage() {
+function getErrorMessage(error: string | undefined) {
+  if (!error) return null;
+  switch (error) {
+    case "CredentialsSignin":
+      return "E-mail ou senha inválidos.";
+    case "OAuthAccountNotLinked":
+      return "Esta conta do Google não está vinculada a um usuário.";
+    case "OAuthSignin":
+    case "OAuthCallback":
+      return "Erro ao autenticar com Google. Tente novamente.";
+    default:
+      return "Ocorreu um erro ao fazer login. Tente novamente.";
+  }
+}
+
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }> | { error?: string };
+}) {
+  const params = searchParams instanceof Promise ? null : searchParams;
+  const errorMessage = getErrorMessage(params?.error);
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       <div className="flex-1 flex items-center justify-center p-8 hero-gradient">
@@ -29,14 +53,26 @@ export default function LoginPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              {errorMessage && (
+                <div className="rounded-lg bg-destructive/10 text-destructive px-4 py-3 text-sm">
+                  {errorMessage}
+                </div>
+              )}
               <form
                 action={async (formData) => {
                   "use server";
-                  await signIn("credentials", {
-                    email: formData.get("email") as string,
-                    password: formData.get("password") as string,
-                    redirectTo: "/dashboard",
-                  });
+                  try {
+                    await signIn("credentials", {
+                      email: formData.get("email") as string,
+                      password: formData.get("password") as string,
+                      redirectTo: "/dashboard",
+                    });
+                  } catch (error) {
+                    if (error instanceof AuthError) {
+                      return redirect(`/login?error=${error.type}`);
+                    }
+                    throw error;
+                  }
                 }}
                 className="space-y-4"
               >
@@ -65,7 +101,14 @@ export default function LoginPage() {
               <form
                 action={async () => {
                   "use server";
-                  await signIn("google", { redirectTo: "/dashboard" });
+                  try {
+                    await signIn("google", { redirectTo: "/dashboard" });
+                  } catch (error) {
+                    if (error instanceof AuthError) {
+                      return redirect(`/login?error=${error.type}`);
+                    }
+                    throw error;
+                  }
                 }}
               >
                 <Button variant="outline" type="submit" className="w-full h-11">

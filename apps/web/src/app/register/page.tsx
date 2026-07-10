@@ -4,8 +4,16 @@ import { prisma } from "@propoai/database";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Sparkles, ArrowLeft } from "lucide-react";
+import { AuthError } from "next-auth";
 
-export default function RegisterPage() {
+export default function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }> | { error?: string };
+}) {
+  const params = searchParams instanceof Promise ? null : searchParams;
+  const errorParam = params?.error;
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       <div className="flex-1 flex items-center justify-center p-8 hero-gradient">
@@ -31,36 +39,58 @@ export default function RegisterPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              {errorParam && (
+                <div className="rounded-lg bg-destructive/10 text-destructive px-4 py-3 text-sm">
+                  {errorParam}
+                </div>
+              )}
               <form
                 action={async (formData) => {
                   "use server";
-                  const name = formData.get("name") as string;
-                  const email = formData.get("email") as string;
-                  const password = formData.get("password") as string;
+                  try {
+                    const name = formData.get("name") as string;
+                    const email = formData.get("email") as string;
+                    const password = formData.get("password") as string;
 
-                  const existing = await prisma.user.findUnique({
-                    where: { email },
-                  });
+                    console.log("[REGISTER] starting registration for", email);
 
-                  if (existing) {
-                    throw new Error("E-mail já cadastrado.");
-                  }
+                    const existing = await prisma.user.findUnique({
+                      where: { email },
+                    });
 
-                  await prisma.user.create({
-                    data: {
-                      name,
+                    if (existing) {
+                      console.log("[REGISTER] email already exists", email);
+                      return redirect("/register?error=E-mail+já+cadastrado.");
+                    }
+
+                    const hashedPassword = await hashPassword(password);
+                    console.log("[REGISTER] password hashed");
+
+                    const user = await prisma.user.create({
+                      data: {
+                        name,
+                        email,
+                        password: hashedPassword,
+                      },
+                    });
+
+                    console.log("[REGISTER] user created", user.id);
+
+                    await signIn("credentials", {
                       email,
-                      password: await hashPassword(password),
-                    },
-                  });
-
-                  await signIn("credentials", {
-                    email,
-                    password,
-                    redirectTo: "/dashboard",
-                  });
-
-                  redirect("/dashboard");
+                      password,
+                      redirectTo: "/dashboard",
+                    });
+                  } catch (error) {
+                    console.error("[REGISTER] error:", error);
+                    if (error instanceof AuthError) {
+                      return redirect(`/register?error=${encodeURIComponent(error.message)}`);
+                    }
+                    if (error instanceof Error) {
+                      return redirect(`/register?error=${encodeURIComponent(error.message)}`);
+                    }
+                    return redirect("/register?error=Erro+ao+criar+conta.+Tente+novamente.");
+                  }
                 }}
                 className="space-y-4"
               >

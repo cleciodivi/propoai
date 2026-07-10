@@ -27,32 +27,37 @@ const {
         password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
-        const parsed = credentialsSchema.safeParse(credentials);
-        if (!parsed.success) {
+        try {
+          const parsed = credentialsSchema.safeParse(credentials);
+          if (!parsed.success) {
+            return null;
+          }
+
+          const { email, password } = parsed.data;
+
+          const user = await prisma.user.findUnique({
+            where: { email },
+          });
+
+          if (!user || !user.password) {
+            return null;
+          }
+
+          const isValid = await compare(password, user.password);
+          if (!isValid) {
+            return null;
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+          };
+        } catch (error) {
+          console.error("[AUTH] authorize error:", error);
           return null;
         }
-
-        const { email, password } = parsed.data;
-
-        const user = await prisma.user.findUnique({
-          where: { email },
-        });
-
-        if (!user || !user.password) {
-          return null;
-        }
-
-        const isValid = await compare(password, user.password);
-        if (!isValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-        };
       },
     }),
   ],
@@ -77,6 +82,8 @@ const {
       return session;
     },
   },
+  debug: process.env.NODE_ENV === "development",
+  trustHost: true,
 });
 
 export { GET, POST, auth, signIn, signOut };

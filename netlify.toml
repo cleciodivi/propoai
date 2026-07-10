@@ -1,16 +1,24 @@
 [build]
   publish = "apps/web/.next"
-  command = "pnpm install && pnpm --filter @propoai/database build && pnpm --filter @propoai/web build"
+  command = "pnpm install && pnpm --filter @propoai/database build && pnpm --filter @propoai/database deploy && pnpm --filter @propoai/web build"
 
 [build.environment]
   NODE_VERSION = "22"
   NPM_FLAGS = "--version"
+  # Garante que o Prisma encontre o schema e gere o cliente no deploy
+  PRISMA_SCHEMA_PATH = "packages/database/prisma/schema.prisma"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
 [functions]
-  included_files = ["packages/database/prisma/schema.prisma", "packages/database/dist/**"]
+  included_files = [
+    "packages/database/prisma/schema.prisma",
+    "packages/database/dist/**",
+    "node_modules/.pnpm/@prisma+client*/**",
+    "node_modules/.bin/prisma",
+    "node_modules/prisma/**"
+  ]
 
 [[redirects]]
   from = "/_next/*"
