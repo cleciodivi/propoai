@@ -224,11 +224,13 @@ function getToneStyle(tone: GenerateProposalInput["tone"]): {
 function generateMockProposal(
   input: GenerateProposalInput,
   customer: { name: string; company?: string | null },
+  userName?: string | null,
 ): { title: string; description: string; sections: { title: string; content: string }[] } {
   const companyText = customer.company ? ` — ${customer.company}` : "";
   const valueText = input.value ? `R$ ${input.value.toFixed(2)}` : "Sob consulta";
   const tone = getToneStyle(input.tone);
   const serviceShort = input.serviceDescription.slice(0, 80);
+  const signatureName = userName?.trim() || "PropoAI";
 
   return {
     title: `Proposta Comercial${companyText} — ${serviceShort}`.slice(0, 120),
@@ -256,7 +258,7 @@ function generateMockProposal(
       },
       {
         title: "Próximos Passos",
-        content: `<p>${tone.urgencyPhrase}</p><p>Para prosseguir, basta clicar em <strong>Aprovar proposta</strong>. Entraremos em contato em seguida para formalizar o início do trabalho.</p>${input.requiresContract ? `<p><strong>ASSIM QUE A PROPOSTA FOR APROVADA DAREMOS INÍCIO AO CONTRATO.</strong></p>` : ""}<p>${tone.closing},</p><p><strong>Equipe PropoAI</strong></p>`,
+        content: `<p>${tone.urgencyPhrase}</p><p>Para prosseguir, basta clicar em <strong>Aprovar proposta</strong>. Entraremos em contato em seguida para formalizar o início do trabalho.</p>${input.requiresContract ? `<p><strong>ASSIM QUE A PROPOSTA FOR APROVADA DAREMOS INÍCIO AO CONTRATO.</strong></p>` : ""}<p>${tone.closing},</p><p><strong>Equipe ${signatureName}</strong></p>`,
       },
     ],
   };
@@ -286,9 +288,11 @@ export async function generateProposalWithAi(input: GenerateProposalInput) {
 
   let parsed: { title: string; description?: string; sections: { title: string; content: string }[] };
 
+  const userName = session.user.name ?? session.user.email ?? "PropoAI";
+
   if (!apiKey) {
     // Modo de desenvolvimento: gera proposta simulada sem consumir tokens da OpenAI
-    parsed = generateMockProposal(input, customer);
+    parsed = generateMockProposal(input, customer, userName);
   } else {
     const prompt = `Você é um especialista em propostas comerciais. Crie uma proposta comercial em português do Brasil para o cliente "${customer.name}"${customer.company ? ` da empresa ${customer.company}` : ""}.
 
@@ -299,6 +303,7 @@ ${input.serviceDescription}
 
 Tom de voz: ${toneMap[input.tone ?? "persuasive"]}
 ${input.value ? `Valor total sugerido: R$ ${input.value.toFixed(2)}` : ""}
+Nome do prestador/remetente da proposta: ${userName}
 
 Responda APENAS com um JSON válido no seguinte formato, sem explicações adicionais:
 {
@@ -309,7 +314,9 @@ Responda APENAS com um JSON válido no seguinte formato, sem explicações adici
   ]
 }
 
-A proposta deve ter entre 4 e 6 seções, incluindo: introdução, escopo do serviço, investimento, prazos e próximos passos.`;
+A proposta deve ter entre 4 e 6 seções, incluindo: introdução, escopo do serviço, investimento, prazos e próximos passos.
+
+Na última seção (Próximos Passos), finalize com uma despedida seguida da assinatura: <p><strong>Equipe ${userName}</strong></p>.`
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -353,7 +360,7 @@ A proposta deve ter entre 4 e 6 seções, incluindo: introdução, escopo do ser
         create: parsed.sections.map((section, index) => ({
           title: section.title,
           content: input.requiresContract && index === parsed.sections.length - 1
-            ? `${section.content}<p><strong>ASSIM QUE A PROPOSTA FOR APROVADA DAREMOS INÍCIO AO CONTRATO.</strong></p>`
+            ? `${section.content}<p><strong>ASSIM QUE A PROPOSTA FOR APROVADA DAREMOS INÍCIO AO CONTRATO.</strong></p><p><strong>Equipe ${userName}</strong></p>`
             : section.content,
           order: index,
           isAiGenerated: true,
