@@ -97,6 +97,18 @@ Autenticação via NextAuth.js (Credentials + Google OAuth). Senhas com bcrypt. 
 
 ---
 
+# Design System e Identidade Visual
+
+## 2026-07-10
+
+- **Design System base do ecossistema PropoAI:**
+  - O design atual do PropoAI é o ponto de partida para todos os projetos futuros.
+  - Diretrizes: gradientes em roxo/azul-claro, glassmorphism, cards com ícones, tipografia clean, botões outline e primary arredondados, identidade visual moderna e profissional.
+  - Todos os próximos SaaS devem partir desta base e evoluir, mantendo consistência visual e boa legibilidade em desktop e mobile.
+  - Prioridade: responsividade mobile, contraste adequado, hierarquia visual clara e experiência fluida.
+
+---
+
 # Aprendizados Transversais (reutilizáveis em outros projetos)
 
 ## 2026-07-10
