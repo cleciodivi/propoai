@@ -4,7 +4,7 @@ import { getCustomers, deleteCustomer } from "./actions";
 import Link from "next/link";
 
 export default async function CustomersPage() {
-  const customers: Awaited<ReturnType<typeof prisma.customer.findMany>> = await getCustomers();
+  const customers = await getCustomers();
 
   return (
     <div className="min-h-screen bg-background">
