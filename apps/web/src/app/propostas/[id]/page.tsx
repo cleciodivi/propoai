@@ -23,15 +23,15 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-xl font-bold">PropoAI</Link>
-            <span className="text-muted-foreground">/</span>
-            <Link href="/propostas" className="text-muted-foreground hover:text-foreground">Propostas</Link>
-            <span className="text-muted-foreground">/</span>
-            <span className="text-muted-foreground truncate max-w-[200px]">{proposal.title}</span>
+        <div className="container mx-auto px-4 min-h-16 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+            <Link href="/dashboard" className="text-xl font-bold shrink-0">PropoAI</Link>
+            <span className="text-muted-foreground shrink-0">/</span>
+            <Link href="/propostas" className="text-muted-foreground hover:text-foreground shrink-0 hidden sm:inline">Propostas</Link>
+            <span className="text-muted-foreground shrink-0 hidden sm:inline">/</span>
+            <span className="text-muted-foreground truncate min-w-0">{proposal.title}</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <Button variant="outline" size="sm" asChild>
               <Link href={`/propostas/${proposal.id}/editar`}>Editar</Link>
             </Button>
@@ -47,14 +47,14 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <CardTitle>{proposal.title}</CardTitle>
-                    <CardDescription>
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                  <div className="min-w-0">
+                    <CardTitle className="break-words">{proposal.title}</CardTitle>
+                    <CardDescription className="break-words">
                       Para: {proposal.customer.name} • {proposal.customer.email}
                     </CardDescription>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColor(proposal.status)}`}>
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium self-start shrink-0 ${statusColor(proposal.status)}`}>
                     {statusLabel(proposal.status)}
                   </span>
                 </div>
@@ -107,13 +107,13 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
                 </div>
                 <div className="pt-2 border-t">
                   <p className="text-sm text-muted-foreground mb-1">Link público:</p>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       readOnly
                       value={publicUrl}
-                      className="flex-1 text-xs rounded-md border border-input bg-muted px-2 py-1"
+                      className="flex-1 min-w-0 text-xs rounded-md border border-input bg-muted px-2 py-1 truncate"
                     />
-                    <Button variant="outline" size="sm" asChild>
+                    <Button variant="outline" size="sm" asChild className="shrink-0">
                       <Link href={`mailto:?subject=${encodeURIComponent(proposal.title)}&body=${encodeURIComponent(publicUrl)}`}>
                         E-mail
                       </Link>
